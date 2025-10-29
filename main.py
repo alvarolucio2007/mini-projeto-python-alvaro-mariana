@@ -1,3 +1,4 @@
+import os
 class SistemaUm():  #Aqui é a lógica do sistema em si
     """Sisteminha CRUD completinho 
     Todos os produtos devem estar em uma lista de dicionários,
@@ -86,6 +87,8 @@ class SistemaUm():  #Aqui é a lógica do sistema em si
     def sair_sistema(self): #Encerra o programa (o mais difícil de se programar kkkkkkkk)
         print("Saindo...")
         return
+    def limpar_tela(self):
+        os.system('cls' if os.name == 'nt' else 'clear')
 
 #Daqui pra baixo é a interação com o usuário via Terminal.
 
@@ -122,6 +125,7 @@ while True:
                         sistema_um.listar_produtos()
                     else:
                         sistema_um.sair_sistema()
+                        break
                 elif opcao in [3,5]: #Parâmetros necessários: apenas codigo.
                     try:
                         codigo=int(input("Qual o código do produto? (apenas números.)"))
@@ -152,4 +156,3 @@ while True:
                     campo=input("Qual o campo no qual você gostaria de editar?")
                     novo_valor=input("Qual o novo valor para tal campo?")
                     sistema_um.atualizar_produto(codigo,campo,novo_valor)      
-    
