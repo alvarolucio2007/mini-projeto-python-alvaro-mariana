@@ -1,4 +1,4 @@
-import os
+import json
 class SistemaUm():  #Aqui é a lógica do sistema em si
     """Sisteminha CRUD completinho 
     Todos os produtos devem estar em uma lista de dicionários,
@@ -7,6 +7,21 @@ class SistemaUm():  #Aqui é a lógica do sistema em si
         self.lista_dict_produtos=[] #Cria uma lista vazia, toda vez que rodar, vai estar vazia
         self.set_codigos=set() #Cria um set vazio, ja que 2 produtos não possuem o mesmo código
         self.tupla_categorias=("Alimento","Limpeza","Higiene","Outros") #Apenas as 4 categorias, nada de muito especial.
+        self.carregar_dados()
+    def carregar_dados(self):
+        try:
+            with open("estoque.json","r") as arquivo:
+                dados_json=json.load(arquivo)
+                self.lista_dict_produtos=dados_json
+                for produto in self.lista_dict_produtos:
+                    self.set_codigos.add(produto["Código"])
+        except FileNotFoundError:
+            print("JSON de nome 'estoque.json' não encontrado!")
+            return
+    def salvar_dados(self):
+        with open("estoque.json","w") as arquivo:
+            json.dump(self.lista_dict_produtos,arquivo)
+                 
     def cadastrar_produto(self,nome,codigo,categoria,preco,quantidade): #Cria e add um produto novo
         if codigo in self.set_codigos:
             print("Código já existente, por favor, tente novamente!")
@@ -87,8 +102,6 @@ class SistemaUm():  #Aqui é a lógica do sistema em si
     def sair_sistema(self): #Encerra o programa (o mais difícil de se programar kkkkkkkk)
         print("Saindo...")
         return
-    def limpar_tela(self):
-        os.system('cls' if os.name == 'nt' else 'clear')
 
 #Daqui pra baixo é a interação com o usuário via Terminal.
 
@@ -98,6 +111,7 @@ while True:
     if pergunta_usuario.lower() not in ["s","n"]:
         print("Por favor, insira respostas válidas!")
     elif pergunta_usuario.lower()=="n":
+        sistema_um.salvar_dados()
         print("Entendido, obrigado por usar o sistema! Desligando...")
         break
     else:
@@ -120,23 +134,7 @@ while True:
                 print("Por favor, insira um valor válido! Apenas entre 1 e 6.")
                 continue
             else:
-                if opcao in [2,6]: #Parâmetros necessários: nenhum
-                    if opcao==2:
-                        sistema_um.listar_produtos()
-                    else:
-                        sistema_um.sair_sistema()
-                        break
-                elif opcao in [3,5]: #Parâmetros necessários: apenas codigo.
-                    try:
-                        codigo=int(input("Qual o código do produto? (apenas números.)"))
-                    except ValueError:
-                        print("Por favor, insira apenas números!")
-                        continue
-                    if opcao==3:
-                        sistema_um.buscar_produto(codigo)
-                    else:
-                        sistema_um.excluir_produto(codigo)
-                elif opcao==1:
+                if opcao==1:
                     try:
                         nome=input("Qual o nome do produto?")
                         codigo=int(input("Qual o código do produto?"))
@@ -147,7 +145,16 @@ while True:
                         print("Por favor, insira corretamente os valores! Em código, preço e quantidade, são números inteiros,float e inteiros respectivamente, mas em nome e categoria, são quaisquer um.")
                         continue
                     sistema_um.cadastrar_produto(nome,codigo,categoria,preco,quantidade)
-                else:
+                elif opcao==2:
+                    sistema_um.listar_produtos()
+                elif opcao==3:
+                    try:
+                        codigo=int(input("Qual o código do produto? (apenas números.)"))
+                    except ValueError:
+                        print("Por favor, insira apenas números!")
+                        continue
+                    sistema_um.buscar_produto(codigo)
+                elif opcao==4:
                     try:
                         codigo=int(input("Qual o código do produto?"))
                     except ValueError:
@@ -155,4 +162,14 @@ while True:
                         continue
                     campo=input("Qual o campo no qual você gostaria de editar?")
                     novo_valor=input("Qual o novo valor para tal campo?")
-                    sistema_um.atualizar_produto(codigo,campo,novo_valor)      
+                    sistema_um.atualizar_produto(codigo,campo,novo_valor)
+                elif opcao==5:
+                    try:
+                        codigo=int(input("Qual o código do produto? (apenas números.)"))
+                    except ValueError:
+                            print("Por favor, insira apenas números!")
+                            continue
+                    sistema_um.excluir_produto(codigo)
+                else:
+                    sistema_um.sair_sistema()
+                    break
