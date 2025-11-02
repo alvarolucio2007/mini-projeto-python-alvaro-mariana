@@ -25,7 +25,7 @@ class SistemaUm():  #Aqui é a lógica do sistema em si
         encontrados=[p for p in self.lista_dict_produtos if nome.lower() in p["Nome"].lower()]
         if encontrados:
             for x in encontrados:
-                json.dumps(x, ensure_ascii=False, indent=2)
+                print(json.dumps(x, ensure_ascii=False, indent=2))
         else:
             print("Não encontrado! Por favor, cheque novamente ou adicione!")
         return 
@@ -33,15 +33,17 @@ class SistemaUm():  #Aqui é a lógica do sistema em si
         lista_categoria_temp=[p for p in self.lista_dict_produtos if p["Categoria"].lower()== categoria.lower()]
         if lista_categoria_temp:
             for produto in lista_categoria_temp:
-                print(produto)
+                print(json.dumps(produto, ensure_ascii=False, indent=2))
         else:
             print(f"Nenhum produto encontrado na categoria '{categoria}'!")
         return
     def mostrar_estoque_baixo(self,limite):
-        for i in range(len(self.lista_dict_produtos)):
-            if limite>self.lista_dict_produtos[i]["Estoque"]:
-                print(self.lista_dict_produtos[i])
-        return
+        encontrado=[p for p in self.lista_dict_produtos if p["Estoque"]<limite]
+        if encontrado:
+            for p in encontrado:
+                print(json.dumps(p, ensure_ascii=False,indent=2))
+        else:
+            print("Nenhum encontrado.")
     def cadastrar_produto(self,nome,codigo,categoria,preco,quantidade): #Cria e add um produto novo
         if codigo in self.set_codigos:
             print("Código já existente, por favor, tente novamente!")
@@ -67,20 +69,21 @@ class SistemaUm():  #Aqui é a lógica do sistema em si
         }
         self.lista_dict_produtos.append(produto)
         self.set_codigos.add(codigo)
+        self.salvar_dados()
         print(f"Produto '{nome}' cadastrado com sucesso!")
     
     def listar_produtos(self): #Mostra todos os produtos em estoque
-        for i in range(len(self.lista_dict_produtos)):
-            print(str(self.lista_dict_produtos[i]).replace("'","").replace("{","").replace("}",""))
+        for p in self.lista_dict_produtos:
+            print(json.dumps(p,ensure_ascii=False,indent=2))
     
     def atualizar_produto(self,codigo,campo,novo_valor):
-        if codigo not in self.set_codigos or campo.lower() not in ["nome","categoria","preço","estoque"]:
+        if codigo not in self.set_codigos or campo.lower() not in ["nome","categoria","preço","estoque","codigo"]:
             print("Parâmetros inválidos!")
             return
         if type(novo_valor)==str and len(novo_valor)<1:
             print("Por favor, insira um novo valor válido!")
             return
-        if (type(novo_valor)==float or type(novo_valor)==int) and novo_valor<=0:
+        if (type(novo_valor)==float or type(novo_valor)==int) and novo_valor<0:
             print("Por favor, insira um valor numérico válido!")
             return
         for i in range(len(self.lista_dict_produtos)):
@@ -92,16 +95,19 @@ class SistemaUm():  #Aqui é a lógica do sistema em si
                     self.lista_dict_produtos[i]["Categoria"]=novo_valor
                     print("Categoria atualizada com sucesso!")
                 if campo.lower()=="preço":
-                    self.lista_dict_produtos[i]["Preço"]=novo_valor
+                    self.lista_dict_produtos[i]["Preço"]=float(novo_valor)
                     print("Preço atualizado com sucesso!")
                 if campo.lower()=="estoque":
-                    self.lista_dict_produtos[i]["Estoque"]=novo_valor
+                    self.lista_dict_produtos[i]["Estoque"]=float(novo_valor)
                     print("Estoque atualizado com sucesso!")
                 if campo.lower()=="codigo":
                     self.set_codigos.remove(codigo)
-                    self.lista_dict_produtos[i]["Código"]=novo_valor
+                    self.lista_dict_produtos[i]["Código"]=int(novo_valor)
                     self.set_codigos.add(novo_valor)
                     print("Código atualizado com sucesso!")
+        self.salvar_dados()
+        return
+            
     def buscar_produto(self,codigo): #Exibe informações de um produto específico
         if codigo not in self.set_codigos:
             print("Código inválido!")
@@ -117,6 +123,7 @@ class SistemaUm():  #Aqui é a lógica do sistema em si
             if self.lista_dict_produtos[i]["Código"]==codigo:
                 self.lista_dict_produtos.pop(i)
                 self.set_codigos.remove(codigo)
+                self.salvar_dados()
                 print("Produto removido com sucesso!")
                 break
     def sair_sistema(self): #Encerra o programa (o mais difícil de se programar kkkkkkkk)
@@ -136,7 +143,7 @@ while True:
         break
     else:
         while True:
-            try:
+            try:  #TODO: Implementar aqui as novas funções, rapidin rapidin
                 print("""
                 === SISTEMA DE ESTOQUE ===
                 1 - Cadastrar produto
