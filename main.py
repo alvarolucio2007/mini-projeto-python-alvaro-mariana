@@ -8,7 +8,7 @@ class SistemaUm():  #Aqui é a lógica do sistema em si
         self.set_codigos=set() #Cria um set vazio, ja que 2 produtos não possuem o mesmo código
         self.tupla_categorias=("Alimento","Limpeza","Higiene","Outros") #Apenas as 4 categorias, nada de muito especial.
         self.carregar_dados()
-    def carregar_dados(self):
+    def carregar_dados(self): #Usa JSON
         try:
             with open("estoque.json","r") as arquivo:
                 dados_json=json.load(arquivo)
@@ -18,10 +18,30 @@ class SistemaUm():  #Aqui é a lógica do sistema em si
         except FileNotFoundError:
             print("JSON de nome 'estoque.json' não encontrado!")
             return
-    def salvar_dados(self):
+    def salvar_dados(self): #Também usa JSON
         with open("estoque.json","w") as arquivo:
             json.dump(self.lista_dict_produtos,arquivo)
-                 
+    def buscar_nome(self,nome):
+        encontrados=[p for p in self.lista_dict_produtos if nome.lower() in p["Nome"].lower()]
+        if encontrados:
+            for x in encontrados:
+                json.dumps(x, ensure_ascii=False, indent=2)
+        else:
+            print("Não encontrado! Por favor, cheque novamente ou adicione!")
+        return 
+    def listar_por_categoria(self,categoria):
+        lista_categoria_temp=[p for p in self.lista_dict_produtos if p["Categoria"].lower()== categoria.lower()]
+        if lista_categoria_temp:
+            for produto in lista_categoria_temp:
+                print(produto)
+        else:
+            print(f"Nenhum produto encontrado na categoria '{categoria}'!")
+        return
+    def mostrar_estoque_baixo(self,limite):
+        for i in range(len(self.lista_dict_produtos)):
+            if limite>self.lista_dict_produtos[i]["Estoque"]:
+                print(self.lista_dict_produtos[i])
+        return
     def cadastrar_produto(self,nome,codigo,categoria,preco,quantidade): #Cria e add um produto novo
         if codigo in self.set_codigos:
             print("Código já existente, por favor, tente novamente!")
