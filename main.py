@@ -5,7 +5,7 @@ class Cores:
     amarelo='\033[93m'
     azul='\033[94m'
     reset='\033[0m'
-class SistemaUm():  #Aqui é a lógica do sistema em si
+class LogicaSistemaUm:  #Aqui é a lógica do sistema em si
     """Sisteminha CRUD completinho 
     Todos os produtos devem estar em uma lista de dicionários,
         que possuem códigos, guardados em um set, e ter uma tupla com categorias"""
@@ -132,94 +132,41 @@ class SistemaUm():  #Aqui é a lógica do sistema em si
                 self.salvar_dados()
                 print(f"{Cores.azul}Produto removido com sucesso!{Cores.reset}")
                 break
+    def verificar_input(self,tipo,nome):
+        while True:
+            valor_str=input(f"Qual o valor para {nome} ?")
+            try:
+                valor=tipo(valor_str)
+                return valor
+            except ValueError:
+                print("Inválido, por favor tente novamente!")
     def sair_sistema(self): #Encerra o programa (o mais difícil de se programar kkkkkkkk)
         print("Saindo...")
         return
 
 #Daqui pra baixo é a interação com o usuário via Terminal.
 
-sistema_um=SistemaUm() #TODO: Criar uma classe CLI, que cuida do usuário e tals, e também funções própias para verificação dentro da classe SistemaUm. womp womp
-while True:
-    pergunta_usuario=input("Você gostaria de usar o sistema? (s/n)")
-    if pergunta_usuario.lower() not in ["s","n"]:
-        print("Por favor, insira respostas válidas!")
-    elif pergunta_usuario.lower()=="n":
-        sistema_um.salvar_dados()
-        print("Entendido, obrigado por usar o sistema! Desligando...")
-        break
-    else:
-        while True:
-            try:  
-                print("""
-                === SISTEMA DE ESTOQUE ===
-                1 - Cadastrar produto
-                2 - Listar produtos
-                3 - Buscar produto
-                4 - Atualizar produto
-                5 - Excluir produto
-                6 - Buscar por nome
-                7 - Listar por categoria
-                8 - Mostrar estoque baixo
-                9 - Sair
-                """)
-                opcao = int(input("Escolha uma opção: "))
-            except ValueError:
-                print("Por favor, insira um valor válido! Apenas entre 1 e 9.")
-                continue
-            if opcao not in range(1,10):
-                print("Por favor, insira um valor válido! Apenas entre 1 e 9.")
-                continue
-            else:
-                if opcao==1:
-                    try:
-                        nome=input("Qual o nome do produto?")
-                        codigo=int(input("Qual o código do produto?"))
-                        categoria=input("Qual a categoria do produto? (são Alimento, Limpeza, Higiene e Outros.)")
-                        preco=float(input("Qual o preço do produto?"))
-                        quantidade=int(input("Qual a quantidade do produto?"))
-                    except ValueError:
-                        print("Por favor, insira corretamente os valores! Em código, preço e quantidade, são números inteiros,float e inteiros respectivamente, mas em nome e categoria, são quaisquer um.")
-                        continue
-                    sistema_um.cadastrar_produto(nome,codigo,categoria,preco,quantidade)
-                elif opcao==2:
-                    sistema_um.listar_produtos()
-                elif opcao==3:
-                    try:
-                        codigo=int(input("Qual o código do produto? (apenas números.)"))
-                    except ValueError:
-                        print("Por favor, insira apenas números!")
-                        continue
-                    sistema_um.buscar_produto(codigo)
-                elif opcao==4:
-                    try:
-                        codigo=int(input("Qual o código do produto?"))
-                    except ValueError:
-                        print("Por favor, insira um código válido!")
-                        continue
-                    campo=input("Qual o campo no qual você gostaria de editar?")
-                    novo_valor=input("Qual o novo valor para tal campo?")
-                    sistema_um.atualizar_produto(codigo,campo,novo_valor)
-                elif opcao==5:
-                    try:
-                        codigo=int(input("Qual o código do produto? (apenas números.)"))
-                    except ValueError:
-                            print(f"{Cores.vermelho}Por favor, insira apenas números!{Cores.reset}")
-                            continue
-                    sistema_um.excluir_produto(codigo)
-                elif opcao==6:
-                    nome=input("Qual o nome do produto que você gostaria de pesquisar?")
-                    sistema_um.buscar_nome(nome)
-                elif opcao==7:
-                    categoria=input("Qual a categoria na qual desejas listar os produtos?")
-                    sistema_um.listar_por_categoria(categoria)
-                elif opcao==8:
-                    while True:
-                        try:
-                            limite=float(input("Qual o limite mínimo para o alarme?"))
-                        except ValueError:
-                            print("Por favor, insira apenas números!")
-                            continue
-                        sistema_um.mostrar_estoque_baixo(limite)
-                else:
-                    sistema_um.sair_sistema()
-                    break
+#TODO: Criar uma classe CLI, que cuida do usuário e tals, e também funções própias para verificação dentro da classe SistemaUm. womp womp
+class CLISistemaUm:
+    def __init__(self):
+        self.logica=LogicaSistemaUm()
+    def iniciar(self):    
+        user=input("Bem-vindo ao sistema! Gostaria de usá-lo? (s/n)")
+        if user.lower()!="s":
+            print("Ok, obrigado por utilizar o sistema! Salvando e desligando...")
+            self.logica.salvar_dados()
+        else:
+            print(f"{Cores.azul}{"="*50}{Cores.reset}")
+            print(f"{Cores.amarelo} Sistema de Estoque {Cores.reset}")
+            print(f"{Cores.azul}{'='*50}{Cores.reset}")
+            print(f"{Cores.verde}[1]{Cores.reset} Cadastrar produto")
+            print(f"{Cores.verde}[2]{Cores.reset} Listar Produtos")
+            print(f"{Cores.verde}[3]{Cores.reset} Buscar Produto")
+            print(f"{Cores.verde}[4]{Cores.reset} ")
+            #tinydb
+    def cadastrar(self):
+        pass
+        
+        
+CLI=CLISistemaUm()
+CLI.iniciar()
