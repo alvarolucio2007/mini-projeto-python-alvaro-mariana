@@ -1,5 +1,4 @@
-alunos_e_notas = {}
-alunos_cadastrados_set = set()
+alunos_e_dados={}
 rodando = True
 
 def calcular_media(notas):
@@ -29,34 +28,39 @@ def cadastrar_aluno():
         if nome_aluno.lower() == 'voltar':
             print("Cadastro cancelado.")
             return
-
-        if nome_aluno in alunos_cadastrados_set:
+        try:
+            matricula= int(input("Por favor, insira a matrícula do aluno!"))
+        except ValueError:
+            print("Por favor, insira apenas números inteiros!")
+        if matricula in alunos_e_dados:
             print(f"O aluno '{nome_aluno}' já está cadastrado.")
+            return
         elif not nome_aluno:
              print("O nome do aluno não pode ser vazio.")
         else:
-            alunos_cadastrados_set.add(nome_aluno)
-            alunos_e_notas[nome_aluno] = tuple() 
-            print(f"'{nome_aluno}' cadastrado com sucesso!")
+            valor_aluno=(nome_aluno,tuple())
+            alunos_e_dados[matricula]=valor_aluno
+            print(f"'{nome_aluno}' cadastrado com sucesso! Matrícula: {matricula}")
             break
 
 def registrar_notas():
     print("Registrar Notas")
     
-    if not alunos_e_notas:
+    if not alunos_e_dados:
         print("Nenhum aluno cadastrado ainda. Cadastre um aluno primeiro.")
         return
 
     print("Alunos cadastrados:")
-    for aluno in alunos_e_notas.keys():
+    for aluno in alunos_e_dados.keys():
         print(f"- {aluno}")
-        
-    nome_aluno = input("Digite o nome do aluno para registrar as notas: ").strip()
-
-    if nome_aluno in alunos_e_notas:
+    try:
+        matricula_aluno = int(input("Digite a matrícula do aluno para registrar as notas: ").strip())
+    except ValueError:
+        print("Por favor, tente novamente com números inteiros!")
+        return
+    if matricula_aluno in alunos_e_dados:
         notas_temporarias = []
-        print("Digite as notas (digite 'fim' para terminar):")
-        
+        nome_aluno,notas_atuais=alunos_e_dados[matricula_aluno]
         while True:
             nota_input = input(f"Nota {len(notas_temporarias) + 1}: ").lower().strip()
             
@@ -74,38 +78,42 @@ def registrar_notas():
             except ValueError:
                 print("Entrada inválida. Digite um número para a nota ou 'fim'.")
         
-        alunos_e_notas[nome_aluno] = tuple(notas_temporarias)
-        print(f"{len(notas_temporarias)} notas registradas para '{nome_aluno}'.")
+        alunos_e_dados[matricula_aluno] = (nome_aluno,tuple(notas_temporarias))
+        print(f"{len(notas_temporarias)} notas registradas para '{matricula_aluno}'.")
         
     else:
-        print(f"Aluno '{nome_aluno}' não encontrado.")
+        print(f"Matrícula não encontrada.")
 
 def listar_alunos_e_medias():
     print("Lista de Alunos e Médias")
 
-    if not alunos_e_notas:
+    if not alunos_e_dados:
         print("Nenhum aluno cadastrado para listar.")
         return
 
     print("Aluno | Notas | Média")
 
-    for nome, notas in alunos_e_notas.items():
+    for matricula,dados_do_aluno in alunos_e_dados.items():
+        nome,notas=dados_do_aluno
         media = calcular_media(notas)
         notas_str = ", ".join(f"{n:.1f}" for n in notas)
         
-        print(f"{nome} | {notas_str} | {media:.2f}")
+        print(f"{nome} (Matrícula {matricula}) | {notas_str} | {media:.2f}")
 
 def buscar_aluno():
     print("Buscar Aluno")
-    
-    nome_busca = input("Digite o nome do aluno que deseja buscar: ").strip()
-    
-    if nome_busca in alunos_e_notas:
-        notas = alunos_e_notas[nome_busca]
+    try:
+        matricula_busca=int(input("Digite a matrícula do aluno que deseja buscar")).strip()
+    except ValueError:
+        print("Por favor, insira apenas números inteiros!")
+        return
+    if matricula_busca in alunos_e_dados:
+        nome_aluno,notas=alunos_e_dados[matricula_busca]
         media = calcular_media(notas)
         
+        
         print("Resultado")
-        print(f"Nome: {nome_busca}")
+        print(f"Nome: {nome_aluno} (Matrícula: {matricula_busca})")
         print(f"Notas: {', '.join(f'{n:.1f}' for n in notas) if notas else 'Nenhuma nota registrada'}")
         print(f"Média: {media:.2f}")
         
@@ -116,19 +124,19 @@ def buscar_aluno():
         else:
             print("Status:Sem média para calcular")
     else:
-        print(f"Aluno '{nome_busca}' não encontrado no sistema.")
+        print(f"Matrícula {matricula_busca} não encontrado no sistema.")
 
 def mostrar_aprovados_reprovados():
     print("Aprovados e Reprovados")
     
-    if not alunos_e_notas:
+    if not alunos_e_dados:
         print("Nenhum aluno cadastrado para verificar.")
         return
         
     aprovados = []
     reprovados = []
     
-    for nome, notas in alunos_e_notas.items():
+    for nmatricula, (nome,notas) in alunos_e_dados.items():
         media = calcular_media(notas)
         
         if media >= 7.0:
@@ -161,10 +169,11 @@ def menu_relatorios():
     
     if escolha == 'a':
         print("--- Relatório: Alunos Cadastrados ---")
-        if alunos_cadastrados_set:
-            for aluno in sorted(alunos_cadastrados_set):
-                print(f"- {aluno}")
-            print(f"Total de alunos: {len(alunos_cadastrados_set)}")
+        if alunos_e_dados:
+            alunos_lista = [(nome,matricula) for matricula, (nome, _) in alunos_e_dados.items()]
+            for nome,matricula in sorted(alunos_lista):
+                print(f"Total de alunos: {len(alunos_lista)}")
+            print(f"Total de alunos: {len(alunos_e_dados)}")
         else:
             print("Nenhum aluno cadastrado.")
             

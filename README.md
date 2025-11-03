@@ -10,6 +10,9 @@ Este repositório contém dois sistemas C.R.U.D completos, desenvolvidos em Pyth
 
 ## 1. Sistema de Controle de Estoque (Projeto 1)
 Sistema de gestão de produtos com persistência de dados (salvos em `estoque.json`), possuindo as seguintes funções:
+
+### Menu e Funcionalidades
+
 | Opção | Funcionalidade (CRUD) | Descrição |
 | :---: | :--- | :--- |
 | **[1]** | **Create** (Cadastrar) | Adiciona um novo produto, validando se o código já existe. |
@@ -21,4 +24,21 @@ Sistema de gestão de produtos com persistência de dados (salvos em `estoque.js
 | **[9]** | Sair | Salva os dados no JSON e encerra o programa. |
 
 ## 2. Sistema de Controle de Alunos e Notas (Projeto 2)
-Sistema simples de gestão escolar, focado em registrar notas, calcular médias e verificar estado de aprovação
+Sistema simples de gestão escolar, focado em registrar notas, calcular médias e verificar estado de aprovação.
+
+### Menu e Funcionalidades
+
+| Opção | Funcionalidade | Descrição |
+| :---: | :--- | :--- |
+| **[1]** | Cadastrar aluno | Registra um novo aluno no sistema, usando o nome como identificador único. |
+| **[2]** | Registrar notas | Permite inserir múltiplas notas para um aluno já cadastrado. As notas são validadas no intervalo de 0 a 10. |
+| **[3]** | Listar alunos e médias | Exibe uma tabela com o nome de todos os alunos, as notas registradas e suas médias calculadas. |
+| **[4]** | Buscar aluno | Exibe os detalhes (Notas, Média e Status) de um aluno específico pelo nome. |
+| **[5]** | Mostrar Aprovados/Reprovados | Lista os alunos com base no critério de aprovação: Média $\ge 7.0$ (Aprovado) e Média $< 7.0$ (Reprovado, desde que tenha notas). |
+| **[6]** | Relatórios | Abre um sub-menu para visualizações detalhadas (Lista de Alunos, Médias Individuais, Aprovados/Reprovados). |
+| **[0]** | Sair | Encerra o sistema. |
+
+## Autores
+### Este projeto de dupla foi desenvolvido por:
+#### Sistema de Controle de Estoque (Projeto 1): Álvaro Lúcio Mousinho Coelho
+#### Sistema de Controle de Alunos e Notas (Projeto 2): Mariana Siqueira Lima
