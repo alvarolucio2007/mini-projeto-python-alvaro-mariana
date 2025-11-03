@@ -1,4 +1,4 @@
-import json
+import json,os,platform
 class Cores:
     verde='\033[92m'
     vermelho='\033[91m'
@@ -16,7 +16,7 @@ class LogicaSistemaUm:  #Aqui é a lógica do sistema em si
         self.carregar_dados()
     def carregar_dados(self): #Usa JSON
         try:
-            with open("estoque.json","r") as arquivo:
+            with open("questao_1/estoque.json","r") as arquivo:
                 dados_json=json.load(arquivo)
                 self.lista_dict_produtos=dados_json
                 for produto in self.lista_dict_produtos:
@@ -25,7 +25,7 @@ class LogicaSistemaUm:  #Aqui é a lógica do sistema em si
             print(f"{Cores.vermelho}JSON de nome 'estoque.json' não encontrado!{Cores.reset}")
             return
     def salvar_dados(self): #Também usa JSON
-        with open("estoque.json","w") as arquivo:
+        with open("questao_1/estoque.json","w") as arquivo:
             json.dump(self.lista_dict_produtos,arquivo)
     def buscar_nome(self,nome):
         encontrados=[p for p in self.lista_dict_produtos if nome.lower() in p["Nome"].lower()]
@@ -146,27 +146,86 @@ class LogicaSistemaUm:  #Aqui é a lógica do sistema em si
 
 #Daqui pra baixo é a interação com o usuário via Terminal.
 
-#TODO: Criar uma classe CLI, que cuida do usuário e tals, e também funções própias para verificação dentro da classe SistemaUm. womp womp
-class CLISistemaUm:
+class TUISistemaUm:
     def __init__(self):
         self.logica=LogicaSistemaUm()
+    def limpar_tela(self):
+        sistema=platform.system()
+        os.system('cls' if sistema=="Windows" else 'clear')
+        
+    def mostrar_menu(self):
+        self.limpar_tela()
+        print(f"{Cores.azul}{"="*50}{Cores.reset}")
+        print(f"{Cores.amarelo} Sistema de Estoque {Cores.reset}")
+        print(f"{Cores.azul}{'='*50}{Cores.reset}")
+        print(f"{Cores.verde}[1]{Cores.reset} Cadastrar produto")
+        print(f"{Cores.verde}[2]{Cores.reset} Listar Produtos")
+        print(f"{Cores.verde}[3]{Cores.reset} Buscar")
+        print(f"{Cores.verde}[4]{Cores.reset} Atualizar Produto ")
+        print(f"{Cores.verde}[5]{Cores.reset} Excluir")
+        print(f"{Cores.verde}[6]{Cores.reset} Buscar por nome")
+        print(f"{Cores.verde}[7]{Cores.reset} Listar por categoria")
+        print(f"{Cores.verde}[8]{Cores.reset} Mostrar estoque baixo")
+        print(f"{Cores.verde}[9]{Cores.reset} Sair")
+                
     def iniciar(self):    
-        user=input("Bem-vindo ao sistema! Gostaria de usá-lo? (s/n)")
-        if user.lower()!="s":
-            print("Ok, obrigado por utilizar o sistema! Salvando e desligando...")
-            self.logica.salvar_dados()
+        while True:
+            user=input("Bem-vindo ao sistema! Gostaria de usá-lo? (s/n)")
+            if user.lower()!="s":
+                print("Ok, obrigado por utilizar o sistema! Salvando e desligando...")
+                self.logica.salvar_dados()
+                return False
+            else:
+                self.mostrar_menu()
+                opcao=self.logica.verificar_input(int,"as opções acima?")
+                self.processar_opcao(opcao)
+                 
+    def processar_opcao(self,opcao):
+        if opcao not in range(1,10):
+            print("Por favor, selecione uma opção válida!")
+            return True
+        elif opcao==1:
+            nome=self.logica.verificar_input(str,"nome")
+            codigo=self.logica.verificar_input(int,"codigo")
+            categoria=self.logica.verificar_input(str,"categoria")
+            preco=self.logica.verificar_input(float,"preço")
+            quantidade=self.logica.verificar_input(float,"quantidade")
+            self.logica.cadastrar_produto(nome,codigo,categoria,preco,quantidade)
+            return True
+        elif opcao==2:
+            self.logica.listar_produtos()
+            return True
+        elif opcao==3:
+            codigo=self.logica.verificar_input(int,"codigo")
+            self.logica.buscar_produto(codigo)
+            return True
+        elif opcao==4:
+            codigo=self.logica.verificar_input(int,"codigo")
+            campo=self.logica.verificar_input(str,"campo")
+            campo=campo.lower()
+            if campo in ["preço","estoque","codigo"]:
+                novo_valor=self.logica.verificar_input(float,"campo")
+            else:
+                novo_valor=self.logica.verificar_input(str,"campo")
+            self.logica.atualizar_produto(codigo,campo,novo_valor)
+            return True
+        elif opcao==5:
+            codigo=self.logica.verificar_input(int,"codigo")
+            self.logica.excluir_produto(codigo)
+            return True
+        elif opcao==6:
+            nome=self.logica.verificar_input(str,"nome")
+            self.logica.buscar_nome(nome)
+            return True
+        elif opcao==7:
+            categoria=self.logica.verificar_input(str,"categoria")
+            self.logica.listar_por_categoria(categoria)
+            return True
+        elif opcao==8:
+            limite=self.logica.verificar_input(float,"limite")
+            self.logica.mostrar_estoque_baixo(limite)
         else:
-            print(f"{Cores.azul}{"="*50}{Cores.reset}")
-            print(f"{Cores.amarelo} Sistema de Estoque {Cores.reset}")
-            print(f"{Cores.azul}{'='*50}{Cores.reset}")
-            print(f"{Cores.verde}[1]{Cores.reset} Cadastrar produto")
-            print(f"{Cores.verde}[2]{Cores.reset} Listar Produtos")
-            print(f"{Cores.verde}[3]{Cores.reset} Buscar Produto")
-            print(f"{Cores.verde}[4]{Cores.reset} ")
-            #tinydb
-    def cadastrar(self):
-        pass
-        
-        
-CLI=CLISistemaUm()
-CLI.iniciar()
+            print("Entendido! Saindo...")
+            return False
+TUI=TUISistemaUm()
+TUI.iniciar()
