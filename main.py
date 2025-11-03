@@ -138,7 +138,7 @@ class SistemaUm():  #Aqui é a lógica do sistema em si
 
 #Daqui pra baixo é a interação com o usuário via Terminal.
 
-sistema_um=SistemaUm()
+sistema_um=SistemaUm() #TODO: Criar uma classe CLI, que cuida do usuário e tals, e também funções própias para verificação. womp womp
 while True:
     pergunta_usuario=input("Você gostaria de usar o sistema? (s/n)")
     if pergunta_usuario.lower() not in ["s","n"]:
@@ -149,7 +149,7 @@ while True:
         break
     else:
         while True:
-            try:  #TODO: Implementar aqui as novas funções, rapidin rapidin
+            try:  
                 print("""
                 === SISTEMA DE ESTOQUE ===
                 1 - Cadastrar produto
@@ -157,14 +157,17 @@ while True:
                 3 - Buscar produto
                 4 - Atualizar produto
                 5 - Excluir produto
-                6 - Sair
+                6 - Buscar por nome
+                7 - Listar por categoria
+                8 - Mostrar estoque baixo
+                9 - Sair
                 """)
                 opcao = int(input("Escolha uma opção: "))
             except ValueError:
-                print("Por favor, insira um valor válido! Apenas entre 1 e 6.")
+                print("Por favor, insira um valor válido! Apenas entre 1 e 9.")
                 continue
-            if opcao not in range(1,7):
-                print("Por favor, insira um valor válido! Apenas entre 1 e 6.")
+            if opcao not in range(1,10):
+                print("Por favor, insira um valor válido! Apenas entre 1 e 9.")
                 continue
             else:
                 if opcao==1:
@@ -203,6 +206,20 @@ while True:
                             print(f"{Cores.vermelho}Por favor, insira apenas números!{Cores.reset}")
                             continue
                     sistema_um.excluir_produto(codigo)
+                elif opcao==6:
+                    nome=input("Qual o nome do produto que você gostaria de pesquisar?")
+                    sistema_um.buscar_nome(nome)
+                elif opcao==7:
+                    categoria=input("Qual a categoria na qual desejas listar os produtos?")
+                    sistema_um.listar_por_categoria(categoria)
+                elif opcao==8:
+                    while True:
+                        try:
+                            limite=float(input("Qual o limite mínimo para o alarme?"))
+                        except ValueError:
+                            print("Por favor, insira apenas números!")
+                            continue
+                        sistema_um.mostrar_estoque_baixo(limite)
                 else:
                     sistema_um.sair_sistema()
                     break
