@@ -1,5 +1,5 @@
 alunos_e_dados={}
-rodando = True
+rodando = True #
 
 def calcular_media(notas):
     if notas:
