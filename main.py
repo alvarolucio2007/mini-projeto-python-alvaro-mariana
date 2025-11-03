@@ -138,7 +138,7 @@ class SistemaUm():  #Aqui é a lógica do sistema em si
 
 #Daqui pra baixo é a interação com o usuário via Terminal.
 
-sistema_um=SistemaUm() #TODO: Criar uma classe CLI, que cuida do usuário e tals, e também funções própias para verificação. womp womp
+sistema_um=SistemaUm() #TODO: Criar uma classe CLI, que cuida do usuário e tals, e também funções própias para verificação dentro da classe SistemaUm. womp womp
 while True:
     pergunta_usuario=input("Você gostaria de usar o sistema? (s/n)")
     if pergunta_usuario.lower() not in ["s","n"]:
