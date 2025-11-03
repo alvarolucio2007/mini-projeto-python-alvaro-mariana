@@ -237,6 +237,7 @@ class SistemaEstoqueCLI:
         elif opcao==8:
             limite=self.logica.verificar_input(float,"limite")
             self.logica.mostrar_estoque_baixo(limite)
+            return True
         else:
             print("Entendido! Saindo...")
             return False
