@@ -18,7 +18,7 @@ class ControleEstoque:  #Aqui é a lógica do sistema em si
     
     def carregar_dados(self): #Usa JSON
         try:
-            with open("mini-projeto-python-alvaro-mariana/questao_1/estoque.json","r") as arquivo:
+            with open("questao_1/estoque.json","r") as arquivo:
                 dados_json=json.load(arquivo)
                 self.lista_dict_produtos=dados_json
                 for produto in self.lista_dict_produtos:
@@ -28,7 +28,7 @@ class ControleEstoque:  #Aqui é a lógica do sistema em si
             return
     
     def salvar_dados(self): #Também usa JSON
-        with open("mini-projeto-python-alvaro-mariana/questao_1/estoque.json","w") as arquivo:
+        with open("questao_1/estoque.json","w") as arquivo:
             json.dump(self.lista_dict_produtos,arquivo)
    
     def buscar_nome(self,nome):
