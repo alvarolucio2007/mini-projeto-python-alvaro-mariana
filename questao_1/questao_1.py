@@ -251,3 +251,5 @@ class SistemaEstoqueCLI:
             return False
 TUI=SistemaEstoqueCLI()
 _ = TUI.iniciar()
+
+#TODO: Fazer a GUI em streamlit (catapimbas)
