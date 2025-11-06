@@ -1,38 +1,45 @@
-import json,os,platform
+import json
+import os
+import platform
+import typing
+
 class Cores:
-    VERDE='\033[92m'
-    VERMELHO='\033[91m'
-    AMARELO='\033[93m'
-    AZUL='\033[94m'
-    RESET='\033[0m'
+    VERDE :str ='\033[92m' #streamlit 
+    VERMELHO :str ='\033[91m'
+    AMARELO :str ='\033[93m'
+    AZUL :str ='\033[94m'
+    RESET:str='\033[0m'
+ProdutoDict=dict[str,str|float|int]
+ListaEstoque=list[ProdutoDict]
 class ControleEstoque:  #Aqui é a lógica do sistema em si
     """Sisteminha CRUD completinho 
     Todos os produtos devem estar em uma lista de dicionários,
         que possuem códigos, guardados em um set, e ter uma tupla com categorias"""
-    
+    lista_dict_produtos:ListaEstoque
+    set_codigos:set[int]
     def __init__(self):
-        self.lista_dict_produtos=[] #Cria uma lista vazia, toda vez que rodar, vai estar vazia
+        self.lista_dict_produtos =[] #Cria uma lista vazia, toda vez que rodar, vai estar vazia
         self.set_codigos=set() #Cria um set vazio, ja que 2 produtos não possuem o mesmo código
-        self.tupla_categorias=("Alimento","Limpeza","Higiene","Outros") #Apenas as 4 categorias, nada de muito especial.
+        self.tupla_categorias :tuple[str,str,str,str] =("Alimento","Limpeza","Higiene","Outros") #Apenas as 4 categorias, nada de muito especial.
         self.carregar_dados()
     
-    def carregar_dados(self): #Usa JSON
+    def carregar_dados(self) -> None: #Usa JSON
         try:
             with open("questao_1/estoque.json","r") as arquivo:
-                dados_json=json.load(arquivo)
+                dados_json : ListaEstoque =json.load(arquivo)
                 self.lista_dict_produtos=dados_json
                 for produto in self.lista_dict_produtos:
-                    self.set_codigos.add(produto["Código"])
+                    self.set_codigos.add(int(produto["Código"]))
         except FileNotFoundError:
             print(f"{Cores.VERMELHO}JSON de nome 'estoque.json' não encontrado!{Cores.RESET}")
             return
     
-    def salvar_dados(self): #Também usa JSON
+    def salvar_dados(self) -> None: #Também usa JSON
         with open("questao_1/estoque.json","w") as arquivo:
             json.dump(self.lista_dict_produtos,arquivo)
    
-    def buscar_nome(self,nome):
-        encontrados=[p for p in self.lista_dict_produtos if nome.lower() in p["Nome"].lower()]
+    def buscar_nome(self,nome : str) -> None:
+        encontrados=[p for p in self.lista_dict_produtos if nome.lower() in str(p["Nome"]).lower()]
         if encontrados:
             for x in encontrados:
                 print(json.dumps(x, ensure_ascii=False, indent=2))
@@ -40,8 +47,9 @@ class ControleEstoque:  #Aqui é a lógica do sistema em si
             print(f"{Cores.VERMELHO}Não encontrado! Por favor, cheque novamente ou adicione!{Cores.RESET}")
         return 
    
-    def listar_por_categoria(self,categoria):
-        lista_categoria_temp=[p for p in self.lista_dict_produtos if p["Categoria"].lower()== categoria.lower()]
+    def listar_por_categoria(self,categoria : str) -> None:
+        
+        lista_categoria_temp=[p for p in self.lista_dict_produtos if str(p["Categoria"]).lower()== categoria.lower()]
         if lista_categoria_temp:
             for produto in lista_categoria_temp:
                 print(json.dumps(produto, ensure_ascii=False, indent=2))
@@ -49,15 +57,15 @@ class ControleEstoque:  #Aqui é a lógica do sistema em si
             print(f"Nenhum produto encontrado na categoria '{categoria}'!")
         return
    
-    def mostrar_estoque_baixo(self,limite):
-        encontrado=[p for p in self.lista_dict_produtos if p["Estoque"]<limite]
+    def mostrar_estoque_baixo(self,limite : float) -> None:
+        encontrado=[p for p in self.lista_dict_produtos if int(p["Estoque"])<limite]
         if encontrado:
             for p in encontrado:
                 print(json.dumps(p, ensure_ascii=False,indent=2))
         else:
             print("Nenhum encontrado.")
    
-    def cadastrar_produto(self,nome,codigo,categoria,preco,quantidade): #Cria e add um produto novo
+    def cadastrar_produto(self,nome:str,codigo:int,categoria:str,preco:float,quantidade:float): #Cria e add um produto novo
         if codigo in self.set_codigos:
             print(f"{Cores.VERMELHO}Código já existente, por favor, tente novamente!{Cores.RESET}")
             return     
@@ -73,7 +81,7 @@ class ControleEstoque:  #Aqui é a lógica do sistema em si
         if quantidade<0:
             print(f"{Cores.VERMELHO}Quantidade inválida, por favor tente novamente!{Cores.RESET}")
             return
-        produto={
+        produto : dict[str, typing.Any]={
             "Código":codigo,
             "Nome":nome,
             "Categoria":categoria,
@@ -90,59 +98,59 @@ class ControleEstoque:  #Aqui é a lógica do sistema em si
         for p in self.lista_dict_produtos:
             print(json.dumps(p,ensure_ascii=False,indent=2))
     
-    def atualizar_produto(self,codigo,campo,novo_valor):
+    def atualizar_produto(self,codigo:int,campo:str,novo_valor:str|int|float):
         if codigo not in self.set_codigos or campo.lower() not in ["nome","categoria","preço","estoque","codigo"]:
             print(f"{Cores.VERMELHO}Parâmetros inválidos!{Cores.RESET}")
             return
-        if type(novo_valor)==str and len(novo_valor)<1:
+        if type(novo_valor) is str and len(novo_valor)<1:
             print(f"{Cores.VERMELHO}Por favor, insira um novo valor válido!{Cores.RESET}")
             return
-        if (type(novo_valor)==float or type(novo_valor)==int) and novo_valor<0:
+        if (type(novo_valor) is float or type(novo_valor) is int) and novo_valor<0:
             print(f"{Cores.VERMELHO}Por favor, insira um valor numérico válido!{Cores.RESET}")
             return
         for i in range(len(self.lista_dict_produtos)):
-            if self.lista_dict_produtos[i]["Código"]==codigo:
+            if int(self.lista_dict_produtos[i]["Código"])==codigo:
                 if campo.lower()=="nome":
-                    self.lista_dict_produtos[i]["Nome"]=novo_valor
+                    self.lista_dict_produtos[i]["Nome"]=str(novo_valor)
                     print(f"{Cores.AZUL}Nome atualizado com sucesso!{Cores.RESET}")
                 if campo.lower()=="categoria":
-                    self.lista_dict_produtos[i]["Categoria"]=novo_valor
+                    (self.lista_dict_produtos[i]["Categoria"])=str(novo_valor)
                     print(f"{Cores.AZUL}Categoria atualizada com sucesso!{Cores.RESET}")
                 if campo.lower()=="preço":
-                    self.lista_dict_produtos[i]["Preço"]=float(novo_valor)
+                    self.lista_dict_produtos[i]["Preço"]=(novo_valor)
                     print(f"{Cores.AZUL}Preço atualizado com sucesso!{Cores.RESET}")
                 if campo.lower()=="estoque":
-                    self.lista_dict_produtos[i]["Estoque"]=float(novo_valor)
+                    self.lista_dict_produtos[i]["Estoque"]=(novo_valor)
                     print(f"{Cores.AZUL}Estoque atualizado com sucesso!{Cores.RESET}")
                 if campo.lower()=="codigo":
                     self.set_codigos.remove(codigo)
-                    self.lista_dict_produtos[i]["Código"]=int(novo_valor)
-                    self.set_codigos.add(novo_valor)
+                    self.lista_dict_produtos[i]["Código"]=(novo_valor)
+                    self.set_codigos.add(int(novo_valor))
                     print(f"{Cores.AZUL}Código atualizado com sucesso!{Cores.RESET}")
         self.salvar_dados()
         return
             
-    def buscar_produto(self,codigo): #Exibe informações de um produto específico
+    def buscar_produto(self,codigo:int): #Exibe informações de um produto específico
         if codigo not in self.set_codigos:
             print(f"{Cores.VERMELHO}Código inválido!{Cores.RESET}")
             return
         for i in range(len(self.lista_dict_produtos)):
-            if self.lista_dict_produtos[i]["Código"]==codigo:
+            if self.lista_dict_produtos[i]["Código"]==str(codigo):
                 print(str(self.lista_dict_produtos[i]).replace("'","").replace("{","").replace("}",""))
     
-    def excluir_produto(self,codigo): #Exclui um produto específico
+    def excluir_produto(self,codigo:int): #Exclui um produto específico
         if codigo not in self.set_codigos:
             print(f"{Cores.VERMELHO}Código inválido!{Cores.RESET}")
             return
         for i in range(len(self.lista_dict_produtos)):
-            if self.lista_dict_produtos[i]["Código"]==codigo:
-                self.lista_dict_produtos.pop(i)
+            if self.lista_dict_produtos[i]["Código"]==str(codigo):
+                _=self.lista_dict_produtos.pop(i)
                 self.set_codigos.remove(codigo)
                 self.salvar_dados()
                 print(f"{Cores.AZUL}Produto removido com sucesso!{Cores.RESET}")
                 break
     
-    def verificar_input(self,tipo,nome):
+    def verificar_input(self,tipo:type[typing.Any] ,nome:str|float|int) -> typing.Any:
         while True:
             valor_str=input(f"Qual o valor para {nome} ?")
             try:
@@ -159,14 +167,14 @@ class ControleEstoque:  #Aqui é a lógica do sistema em si
 
 class SistemaEstoqueCLI:
     
-    def __init__(self):
-        self.logica=ControleEstoque()
+    def __init__(self) -> None:
+        self.logica : ControleEstoque =ControleEstoque()
     
-    def limpar_tela(self):
+    def limpar_tela(self) -> None:
         sistema=platform.system()
-        os.system('cls' if sistema=="Windows" else 'clear')
+        _=os.system('cls' if sistema=="Windows" else 'clear')
         
-    def mostrar_menu(self):
+    def mostrar_menu(self) -> None:
         self.limpar_tela()
         print(f"{Cores.AZUL}{"="*50}{Cores.RESET}")
         print(f"{Cores.AMARELO} Sistema de Estoque {Cores.RESET}")
@@ -191,9 +199,9 @@ class SistemaEstoqueCLI:
             else:
                 self.mostrar_menu()
                 opcao=self.logica.verificar_input(int,"as opções acima?")
-                self.processar_opcao(opcao)
+                _=self.processar_opcao(opcao)
                  
-    def processar_opcao(self,opcao):
+    def processar_opcao(self,opcao: int) -> bool:
         if opcao not in range(1,10):
             print("Por favor, selecione uma opção válida!")
             return True
@@ -217,9 +225,9 @@ class SistemaEstoqueCLI:
             campo=self.logica.verificar_input(str,"campo")
             campo=campo.lower()
             if campo in ["preço","estoque","codigo"]:
-                novo_valor=self.logica.verificar_input(float,"campo")
+                novo_valor=self.logica.verificar_input(float," o novo valor")
             else:
-                novo_valor=self.logica.verificar_input(str,"campo")
+                novo_valor=self.logica.verificar_input(str,"o novo valor")
             self.logica.atualizar_produto(codigo,campo,novo_valor)
             return True
         elif opcao==5:
@@ -242,4 +250,4 @@ class SistemaEstoqueCLI:
             print("Entendido! Saindo...")
             return False
 TUI=SistemaEstoqueCLI()
-TUI.iniciar()
+_ = TUI.iniciar()
