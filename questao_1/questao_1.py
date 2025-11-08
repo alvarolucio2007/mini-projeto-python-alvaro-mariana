@@ -46,21 +46,20 @@ class ControleEstoque:  #Aqui é a lógica do sistema em si
             print(f"{Cores.VERMELHO}Não encontrado! Por favor, cheque novamente ou adicione!{Cores.RESET}")
         return 
    
-    def listar_por_categoria(self,categoria : str) -> None:
+    def listar_por_categoria(self,categoria : str) -> list|None:
         
         lista_categoria_temp=[p for p in self.lista_dict_produtos if str(p["Categoria"]).lower()== categoria.lower()]
         if lista_categoria_temp:
-            for produto in lista_categoria_temp:
-                print(json.dumps(produto, ensure_ascii=False, indent=2))
+            return lista_categoria_temp
         else:
             print(f"Nenhum produto encontrado na categoria '{categoria}'!")
         return
    
-    def mostrar_estoque_baixo(self,limite : float) -> None:
+    def mostrar_estoque_baixo(self,limite : float) -> list:
         encontrado=[p for p in self.lista_dict_produtos if int(p["Estoque"])<limite]
         if encontrado:
             for p in encontrado:
-                print(json.dumps(p, ensure_ascii=False,indent=2))
+                return encontrado
         else:
             print("Nenhum encontrado.")
    
@@ -234,8 +233,7 @@ class FrontEnd():
         return 
     def renderizar_buscar(self) -> None:
         st.markdown("Rendeirização de produto")
-
-        tipo_busca=st.selectbox("Tipo de busca",("Nome","Tipo","Estoque Baixo"))
+        tipo_busca=st.selectbox("Tipo de busca",("Nome","Categoria","Estoque Baixo"))
         if tipo_busca=="Nome":
             busca=st.text_input("Qual seria o nome?",max_chars=100)
             try:
@@ -246,10 +244,27 @@ class FrontEnd():
                 )
             except Exception as e:
                 st.error(f"Falha na busca: {e}")
-                
-        
-            
-        
+        elif tipo_busca=="Categoria":
+            busca=st.selectbox("Categoria",self.estoque.tupla_categorias)
+            try:
+                st.dataframe(
+                    self.estoque.listar_por_categoria(busca),
+                    use_container_width=True,
+                    hide_index=True
+                )
+            except Exception as e:
+                st.error(f"Falha na busca: {e}")
+        else:
+            busca=st.number_input("Qual seria o limite?",min_value=0,step=1)
+            try:
+                st.dataframe(
+                    self.estoque.mostrar_estoque_baixo(busca),
+                    use_container_width=True,
+                    hide_index=True
+                )
+            except Exception as e:
+                st.error(f"Falha na busca: {e}")
+        return
     def rodar(self):
         opcao=self.renderizar_menu_lateral()
         if opcao=="Cadastrar Produto":
