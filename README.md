@@ -9,6 +9,7 @@ Este repositório contém dois sistemas C.R.U.D completos, desenvolvidos em Pyth
 | **POO(Classes)** | Arquitetura principal para permitir a melhor separação e customização tanto da Lógica de Negócio quanto da Interface de Usuário |
 
 ## 1. Sistema de Controle de Estoque (Projeto 1)
+### Link para o deploy: **[Deploy](https://alvarolucio2007-mini-projeto-python-a-questao-1questao-1-idhjrn.streamlit.app/)**
 ### Nota: Este sistema fora incrementado pós prazo, para ver o sistema original dentro do prazo, **[Clique aqui](https://github.com/alvarolucio2007/mini-projeto-python-alvaro-mariana/tree/af693224725d526940fae8d41e448ccb6d70c379)**
 Sistema de gestão de produtos com persistência de dados (salvos em `estoque.json`), possuindo as seguintes funções:
 
