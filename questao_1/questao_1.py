@@ -1,7 +1,7 @@
 import json
-import os
-import platform
 import typing
+import streamlit as st
+import pandas as pd
 
 class Cores:
     VERDE :str ='\033[92m' #streamlit 
@@ -25,7 +25,7 @@ class ControleEstoque:  #Aqui é a lógica do sistema em si
     
     def carregar_dados(self) -> None: #Usa JSON
         try:
-            with open("questao_1/estoque.json","r") as arquivo:
+            with open("/home/alvaro/Códigos/mini-projeto/mini-projeto-python-alvaro-mariana/questao_1/estoque.json","r") as arquivo:
                 dados_json : ListaEstoque =json.load(arquivo)
                 self.lista_dict_produtos=dados_json
                 for produto in self.lista_dict_produtos:
@@ -35,14 +35,13 @@ class ControleEstoque:  #Aqui é a lógica do sistema em si
             return
     
     def salvar_dados(self) -> None: #Também usa JSON
-        with open("questao_1/estoque.json","w") as arquivo:
+        with open("/home/alvaro/Códigos/mini-projeto/mini-projeto-python-alvaro-mariana/questao_1/estoque.json","w") as arquivo:
             json.dump(self.lista_dict_produtos,arquivo)
    
-    def buscar_nome(self,nome : str) -> None:
+    def buscar_nome(self,nome : str) -> list|None:
         encontrados=[p for p in self.lista_dict_produtos if nome.lower() in str(p["Nome"]).lower()]
         if encontrados:
-            for x in encontrados:
-                print(json.dumps(x, ensure_ascii=False, indent=2))
+            return encontrados
         else:
             print(f"{Cores.VERMELHO}Não encontrado! Por favor, cheque novamente ou adicione!{Cores.RESET}")
         return 
@@ -65,7 +64,7 @@ class ControleEstoque:  #Aqui é a lógica do sistema em si
         else:
             print("Nenhum encontrado.")
    
-    def cadastrar_produto(self,nome:str,codigo:int,categoria:str,preco:float,quantidade:float): #Cria e add um produto novo
+    def cadastrar_produto(self,nome:str,codigo:int,categoria:str,preco:float,quantidade:float) -> None :#Cria e add um produto novo
         if codigo in self.set_codigos:
             print(f"{Cores.VERMELHO}Código já existente, por favor, tente novamente!{Cores.RESET}")
             return     
@@ -94,7 +93,7 @@ class ControleEstoque:  #Aqui é a lógica do sistema em si
         print(f"{Cores.VERDE}Produto '{nome}' cadastrado com sucesso!{Cores.RESET}")
     
    
-    def listar_produtos(self): #Mostra todos os produtos em estoque
+    def listar_produtos(self) -> None: #Mostra todos os produtos em estoque
         for p in self.lista_dict_produtos:
             print(json.dumps(p,ensure_ascii=False,indent=2))
     
@@ -163,93 +162,107 @@ class ControleEstoque:  #Aqui é a lógica do sistema em si
         print("Saindo...")
         return
 
-#Daqui pra baixo é a interação com o usuário via Terminal.
-
-class SistemaEstoqueCLI:
-    
+class FrontEnd():
     def __init__(self) -> None:
-        self.logica : ControleEstoque =ControleEstoque()
+        self.estoque=ControleEstoque()
+        self.produtos=self.estoque.lista_dict_produtos
+    def renderizar_menu_lateral(self):
+        with st.sidebar:
+            st.header("Selecione a ação")
+            opcao_selecionada=st.radio("Navegação",["Home(Listagem)","Cadastrar Produto","Buscar Produto","Atualizar Produto","Excluir Produto"])
+            return opcao_selecionada
+            
+    def renderizar_cadastro(self) -> None:
+        st.markdown("Cadastro de Novo Produto")
+        with st.form("form_cadastro"):
+            col1,col2=st.columns(2)
+            with col1:
+                nome=st.text_input("Nome do Produto", max_chars=100)
+            with col2:
+                codigo=st.number_input("Código (ID)", min_value=1, step=1)
+            caregoria=st.selectbox("Categoria", self.estoque.tupla_categorias)
+            col3,col4=st.columns(2)
+            with col3:
+                preco=st.number_input("Preço (R$)", min_value=0.01, format="%.2f")
+            with col4:
+                quantidade=st.number_input("Quantidade em estoque", min_value=0.0,format="%.2f")
+            clique_salvar=st.form_submit_button("Cadastrar e Salvar", use_container_width=True)
+            if clique_salvar:
+                try:
+                    self.estoque.atualizar_produto(
+                        codigo=int(codigo),
+                        campo=tipo_de_dado.lower(),
+                        novo_valor=novo_valor
+                    )
+                    st.success(f"Produto {codigo} atualizado com sucesso! Novo {tipo_de_dado}: {novo_valor}")
+                except Exception as e:
+                    st.error(f"Falha na atualização: {e}")
+        return
     
-    def limpar_tela(self) -> None:
-        sistema=platform.system()
-        _=os.system('cls' if sistema=="Windows" else 'clear')
-        
-    def mostrar_menu(self) -> None:
-        self.limpar_tela()
-        print(f"{Cores.AZUL}{"="*50}{Cores.RESET}")
-        print(f"{Cores.AMARELO} Sistema de Estoque {Cores.RESET}")
-        print(f"{Cores.AZUL}{'='*50}{Cores.RESET}")
-        print(f"{Cores.VERDE}[1]{Cores.RESET} Cadastrar produto")
-        print(f"{Cores.VERDE}[2]{Cores.RESET} Listar Produtos")
-        print(f"{Cores.VERDE}[3]{Cores.RESET} Buscar")
-        print(f"{Cores.VERDE}[4]{Cores.RESET} Atualizar Produto ")
-        print(f"{Cores.VERDE}[5]{Cores.RESET} Excluir")
-        print(f"{Cores.VERDE}[6]{Cores.RESET} Buscar por nome")
-        print(f"{Cores.VERDE}[7]{Cores.RESET} Listar por categoria")
-        print(f"{Cores.VERDE}[8]{Cores.RESET} Mostrar estoque baixo")
-        print(f"{Cores.VERDE}[9]{Cores.RESET} Sair")
+    def renderizar_atualizar(self) -> None:
+        st.markdown("Atualização de Produto")
+        tipo_de_dado=st.selectbox(
+            "Tipo de dado",
+            ("Código","Nome","Categoria","Preço","Estoque"),
+            key="upd_campo_select"
+        )
+        novo_valor=None
+        with st.form("form_atualizar"):
+            codigo=st.number_input("Código (ID)", min_value=1,step=1)
+            st.markdown(f"Novo valor para {tipo_de_dado}.")
                 
-    def iniciar(self):    
-        while True:
-            user=input("Bem-vindo ao sistema! Gostaria de usá-lo? (s/n)")
-            if user.lower()!="s":
-                print("Ok, obrigado por utilizar o sistema! Salvando e desligando...")
-                self.logica.salvar_dados()
-                return False
-            else:
-                self.mostrar_menu()
-                opcao=self.logica.verificar_input(int,"as opções acima?")
-                _=self.processar_opcao(opcao)
-                 
-    def processar_opcao(self,opcao: int) -> bool:
-        if opcao not in range(1,10):
-            print("Por favor, selecione uma opção válida!")
-            return True
-        elif opcao==1:
-            nome=self.logica.verificar_input(str,"nome")
-            codigo=self.logica.verificar_input(int,"codigo")
-            categoria=self.logica.verificar_input(str,"categoria")
-            preco=self.logica.verificar_input(float,"preço")
-            quantidade=self.logica.verificar_input(float,"quantidade")
-            self.logica.cadastrar_produto(nome,codigo,categoria,preco,quantidade)
-            return True
-        elif opcao==2:
-            self.logica.listar_produtos()
-            return True
-        elif opcao==3:
-            codigo=self.logica.verificar_input(int,"codigo")
-            self.logica.buscar_produto(codigo)
-            return True
-        elif opcao==4:
-            codigo=self.logica.verificar_input(int,"codigo")
-            campo=self.logica.verificar_input(str,"campo")
-            campo=campo.lower()
-            if campo in ["preço","estoque","codigo"]:
-                novo_valor=self.logica.verificar_input(float," o novo valor")
-            else:
-                novo_valor=self.logica.verificar_input(str,"o novo valor")
-            self.logica.atualizar_produto(codigo,campo,novo_valor)
-            return True
-        elif opcao==5:
-            codigo=self.logica.verificar_input(int,"codigo")
-            self.logica.excluir_produto(codigo)
-            return True
-        elif opcao==6:
-            nome=self.logica.verificar_input(str,"nome")
-            self.logica.buscar_nome(nome)
-            return True
-        elif opcao==7:
-            categoria=self.logica.verificar_input(str,"categoria")
-            self.logica.listar_por_categoria(categoria)
-            return True
-        elif opcao==8:
-            limite=self.logica.verificar_input(float,"limite")
-            self.logica.mostrar_estoque_baixo(limite)
-            return True
-        else:
-            print("Entendido! Saindo...")
-            return False
-TUI=SistemaEstoqueCLI()
-_ = TUI.iniciar()
+            if tipo_de_dado in ["Preço","Estoque"]:
+                novo_valor=st.number_input("Qual seria o novo valor?",min_value=0,key="upd_valor_num")
+            elif tipo_de_dado=="Código":
+                novo_valor=st.number_input("Qual seria o novo valor?",min_value=1,key="upd_valor_cod")
+            elif tipo_de_dado=="Nome" or tipo_de_dado=="Categoria":
+                novo_valor=st.text_input("Qual seria o novo valor?",max_chars=100,key="upd_valor_str")
+            clique_salvar=st.form_submit_button("Atualizar e Salvar",use_container_width=True)
+            if clique_salvar:
+                if novo_valor is None:
+                    st.error("Erro! Por favor, insira o novo valor corretamente!")
+                    return
+                try:
+                    self.estoque.atualizar_produto(
+                        codigo=int(codigo),
+                        campo=tipo_de_dado.lower(),
+                        novo_valor=novo_valor
+                    )
+                    st.success(f"Produto {codigo} atualizado com sucesso! Novo {tipo_de_dado}: {novo_valor}")
+                except Exception as e:
+                    st.error(f"Falha na atualização: {e}")
+        return 
+    def renderizar_buscar(self) -> None:
+        st.markdown("Rendeirização de produto")
 
-#TODO: Fazer a GUI em streamlit (catapimbas)
+        tipo_busca=st.selectbox("Tipo de busca",("Nome","Tipo","Estoque Baixo"))
+        if tipo_busca=="Nome":
+            busca=st.text_input("Qual seria o nome?",max_chars=100)
+            try:
+                st.dataframe(
+                    self.estoque.buscar_nome(busca),
+                    use_container_width=True,
+                    hide_index=True
+                )
+            except Exception as e:
+                st.error(f"Falha na busca: {e}")
+                
+        
+            
+        
+    def rodar(self):
+        opcao=self.renderizar_menu_lateral()
+        if opcao=="Cadastrar Produto":
+            self.renderizar_cadastro()
+        elif opcao=="Home(Listagem)":
+            st.title("Visão Geral do Estoque")
+        elif opcao=="Atualizar Produto":
+            self.renderizar_atualizar()
+        elif opcao=="Buscar Produto":
+            self.renderizar_buscar()
+        else:
+            st.info("Ainda em construção...")
+        
+if __name__=='__main__':
+    app=FrontEnd()
+    app.rodar()
