@@ -1,5 +1,4 @@
 import json
-
 import typing
 import streamlit as st
 import pandas as pd
@@ -161,7 +160,7 @@ class FrontEnd():
                 preco=st.number_input("Preço (R$)", min_value=0.01, format="%.2f")
             with col4:
                 quantidade=st.number_input("Quantidade em estoque", min_value=0.0,format="%.2f")
-            clique_salvar=st.form_submit_button("Cadastrar e Salvar", use_container_width=True)
+            clique_salvar=st.form_submit_button("Cadastrar e Salvar", width='stretch')
             if clique_salvar:
                 try:
                     self.estoque.cadastrar_produto(
@@ -171,8 +170,8 @@ class FrontEnd():
                         preco=float(preco),
                         quantidade=float(quantidade)
                     )
-                    st.success(f"Produto {codigo} adicionado com sucesso (Código: {codigo})")
                     st.rerun()
+                    st.success(f"Produto {codigo} adicionado com sucesso (Código: {codigo})")
                 except Exception as e:
                     st.error(f"Falha no cadastro! Verifique se o código já existe. Código de erro: {e}")
         return
@@ -195,7 +194,7 @@ class FrontEnd():
                 novo_valor=st.number_input("Qual seria o novo valor?",min_value=1,key="upd_valor_cod")
             elif tipo_de_dado=="Nome" or tipo_de_dado=="Categoria":
                 novo_valor=st.text_input("Qual seria o novo valor?",max_chars=100,key="upd_valor_str")
-            clique_salvar=st.form_submit_button("Atualizar e Salvar",use_container_width=True)
+            clique_salvar=st.form_submit_button("Atualizar e Salvar",width='stretch')
             if clique_salvar:
                 if novo_valor is None:
                     st.error("Erro! Por favor, insira o novo valor corretamente!")
@@ -221,7 +220,7 @@ class FrontEnd():
                 df_resultados=pd.DataFrame(resultados)
                 if not df_resultados.empty:
                     st.success(f"Encontrado(s) {len(df_resultados)} produto(s).")
-                    st.dataframe(df_resultados,use_container_width=True,hide_index=True)
+                    st.dataframe(df_resultados,width='stretch',hide_index=True)
                 else:
                     st.warning(f"Nenhum produto encontrado com o nome '{busca}'")
         elif tipo_busca=="Categoria":
@@ -230,14 +229,14 @@ class FrontEnd():
             df_resultados=pd.DataFrame(resultados)
             if not df_resultados.empty:
                 st.success(f"Encontado(s) {len(df_resultados)} produto(s).")
-                st.dataframe(df_resultados,use_container_width=True,hide_index=True)
+                st.dataframe(df_resultados,width='stretch',hide_index=True)
         else:
             busca=st.number_input("Qual seria o limite?",min_value=0,step=1)
             resultados=self.estoque.mostrar_estoque_baixo(busca)
             df_resultados=pd.DataFrame(resultados)
             if not df_resultados.empty:
                 st.warning(f"{len(df_resultados)} produto(s) estão abaixo do limite!")
-                st.dataframe(df_resultados,use_container_width=True,hide_index=True)
+                st.dataframe(df_resultados,width='stretch',hide_index=True)
             else:
                 st.success("Todos os produtos estão acima do limite de estoque!")  
         return
@@ -249,7 +248,7 @@ class FrontEnd():
         with st.form("form_exclusao_busca"):
             codigo_excluir_input=st.number_input("Insira o código (ID) do produto a ser excluído:",min_value=1,step=1,key="codigo_excluir_input_widget")
             
-            clique_buscar=st.form_submit_button("Buscar Produto para Exclusão",use_container_width=True)
+            clique_buscar=st.form_submit_button("Buscar Produto para Exclusão",width='stretch')
             if clique_buscar:
                 st.session_state.codigo_excluir=int(codigo_excluir_input)
                 st.rerun()
@@ -261,7 +260,7 @@ class FrontEnd():
                     (p["Nome"] for p in self.estoque.lista_dict_produtos if int(p["Código"]) == int(codigo_excluir)),
                     "Produto Desconhecido")
             st.error(f"Você está prestes a excluir o produto: {nome_produto} (Código: {int(codigo_excluir)})")
-            clique_excluir=st.button("CONFIRMAR EXCLUSÃO",use_container_width=True)
+            clique_excluir=st.button("CONFIRMAR EXCLUSÃO",width='stretch')
             if clique_excluir:
                 try:
                     self.estoque.excluir_produto(int(codigo_excluir))
@@ -281,7 +280,7 @@ class FrontEnd():
         try:
             st.dataframe(
                 self.estoque.lista_dict_produtos,
-                use_container_width=True,
+                width='stretch',
                 hide_index=True
             )
         except Exception as e:
