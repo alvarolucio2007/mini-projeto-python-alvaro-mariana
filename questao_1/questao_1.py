@@ -5,19 +5,23 @@ import pandas as pd
 import os
 
 ProdutoDict=dict[str,str|float|int]
+HistoricoDocumentacao=dict[str,str|float]
+ListaMovimentacao=list[HistoricoDocumentacao]
 ListaEstoque=list[ProdutoDict]
 class ControleEstoque:  #Aqui é a lógica do sistema em si
-    
+    #
     """Sisteminha CRUD completinho 
     Todos os produtos devem estar em uma lista de dicionários,
         que possuem códigos, guardados em um set, e ter uma tupla com categorias"""
     lista_dict_produtos:ListaEstoque
+    lista_movimentacoes:ListaMovimentacao
     set_codigos:set[int]
     JSON_PATH=os.path.join(os.getcwd(),"estoque.json")
     def __init__(self):
         self.lista_dict_produtos =[] #Cria uma lista vazia, toda vez que rodar, vai estar vazia
         self.set_codigos=set() #Cria um set vazio, ja que 2 produtos não possuem o mesmo código
         self.tupla_categorias :tuple[str,str,str,str] =("Alimento","Limpeza","Higiene","Outros") #Apenas as 4 categorias, nada de muito especial.
+        self.lista_movimentacoes=[]
         self.carregar_dados()
     
     def carregar_dados(self) -> None: #Usa JSON
@@ -50,13 +54,12 @@ class ControleEstoque:  #Aqui é a lógica do sistema em si
         with open(self.JSON_PATH,"w") as arquivo:
             json.dump(self.lista_dict_produtos,arquivo)
    
-    def buscar_nome(self,nome : str) -> list:
+    def buscar_nome(self,nome : str) -> list|Exception:
         encontrados=[p for p in self.lista_dict_produtos if nome.lower() in str(p["Nome"]).lower()]
         if encontrados:
             return encontrados
         else:
             raise ValueError("Nenhum produto encontrado!")
-        return encontrados
    
     def listar_por_categoria(self,categoria : str) -> list:
         lista_categoria_temp=[p for p in self.lista_dict_produtos if str(p["Categoria"]).lower()== categoria.lower()]
@@ -134,6 +137,18 @@ class ControleEstoque:  #Aqui é a lógica do sistema em si
                 self.salvar_dados()
                 break
         return
+    
+    def movimentar_produto(self,data:str,produto:str,tipo:str,quantidade:float)->None:
+        if self.buscar_nome(produto):
+            self.lista_movimentacoes.append({
+                "data":data,
+                "produto":produto,
+                "tipo":tipo,
+                "qnt":quantidade
+            })
+            
+            
+        
 
 class FrontEnd():
     def __init__(self) -> None:
@@ -143,7 +158,7 @@ class FrontEnd():
     def renderizar_menu_lateral(self):
         with st.sidebar:
             st.header("Selecione a ação")
-            opcao_selecionada=st.radio("Navegação",["Home(Listagem)","Cadastrar Produto","Buscar Produto","Atualizar Produto","Excluir Produto"])
+            opcao_selecionada=st.radio("Navegação",["Home(Listagem)","Cadastrar Produto","Buscar Produto","Atualizar Produto","Excluir Produto","Movimentar Produto"])
             return opcao_selecionada
             
     def renderizar_cadastro(self) -> None:
@@ -274,6 +289,14 @@ class FrontEnd():
         elif codigo_excluir is None:
             st.info("Digite um código e clique em buscar!")
         return
+    def renderizar_movimentacao(self) -> None:
+        st.markdown("Registrar Movimentação de Produto")
+        with st.form("form_movimentar"):
+            st.text_input("Qual o nome do produto?")
+            
+            st.form_submit_button("Cadastrar Movimentação de Item!")
+            
+        
     def renderizar_home(self):
         st.title("Visão Geral do Estoque")
         st.info({self.estoque.JSON_PATH})
@@ -299,6 +322,8 @@ class FrontEnd():
             self.renderizar_buscar()
         elif opcao=="Excluir Produto":
             self.renderizar_excluir()
+        elif opcao=="Movimentar Produto":
+            self.renderizar_movimentacao()
         else:
             st.info("Ainda em construção...")
         
